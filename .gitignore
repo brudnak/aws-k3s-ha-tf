@@ -307,3 +307,11 @@ $RECYCLE.BIN/
 *.lnk
 
 # End of https://www.toptal.com/developers/gitignore/api/terraform,visualstudiocode,goland,vim,macos,windows,linux,notepadpp,sublimetext
+
+.terraform*
+terraform.tfstate*
+.idea
+var.auto.tfvars
+*.tfvars
+
+*config
