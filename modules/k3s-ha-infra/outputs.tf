@@ -12,3 +12,7 @@ output "random_pet_id" {
 output "balancer_dns_name" {
   value = "load balancer to create DNS record with: ${aws_lb.aws_lb.dns_name}"
 }
+
+output "database_endpoint" {
+  value = [for instance in aws_rds_cluster_instance.aws_rds_cluster_instance : "mysql://tfadmin:${var.aws_rds_password}@tcp(${instance.endpoint})/k3s"]
+}

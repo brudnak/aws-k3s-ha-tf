@@ -8,6 +8,16 @@ resource "random_pet" "random_pet" {
   separator = "-"
 }
 
+resource "random_pet" "random_pet_rds" {
+
+  keepers = {
+    aws_prefix = "${var.aws_prefix}"
+  }
+
+  length    = 2
+  separator = ""
+}
+
 provider "aws" {
   region     = var.aws_region
   access_key = var.aws_access_key
@@ -108,4 +118,26 @@ resource "aws_lb_listener" "aws_lb_listener_443" {
     type             = "forward"
     target_group_arn = aws_lb_target_group.aws_lb_target_group_443.arn
   }
+}
+
+resource "aws_rds_cluster" "aws_rds_cluster" {
+  cluster_identifier      = "${var.aws_prefix}-${random_pet.random_pet_rds.id}"
+  engine                  = "aurora-mysql"
+  engine_version          = "5.7.mysql_aurora.2.10.2"
+  availability_zones      = ["us-east-2a", "us-east-2b", "us-east-2c"]
+  database_name           = "${var.aws_prefix}${random_pet.random_pet_rds.id}"
+  master_username         = "tfadmin"
+  master_password         = var.aws_rds_password
+  backup_retention_period = 5
+  preferred_backup_window = "07:00-09:00"
+  skip_final_snapshot     = true
+}
+
+resource "aws_rds_cluster_instance" "aws_rds_cluster_instance" {
+  count              = 1
+  identifier         = "${var.aws_prefix}-${random_pet.random_pet_rds.id}-${count.index}"
+  cluster_identifier = aws_rds_cluster.aws_rds_cluster.id
+  instance_class     = "db.r6g.2xlarge"
+  engine             = aws_rds_cluster.aws_rds_cluster.engine
+  engine_version     = aws_rds_cluster.aws_rds_cluster.engine_version
 }

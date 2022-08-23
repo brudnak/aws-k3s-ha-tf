@@ -22,4 +22,5 @@ module "k3s-ha-infra" {
   aws_subnet_id         = var.aws_subnet_id
   aws_security_group_id = var.aws_security_group_id
   aws_pem_key_name      = var.aws_pem_key_name
+  aws_rds_password      = var.aws_rds_password
 }

@@ -58,3 +58,8 @@ variable "aws_pem_key_name" {
   type        = string
   description = "The PEM key name to use."
 }
+
+variable "aws_rds_password" {
+  type        = string
+  description = "Password for the Amazon Aurora MySQL database."
+}
