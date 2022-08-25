@@ -25,7 +25,7 @@ provider "aws" {
 }
 
 resource "aws_instance" "aws_instance" {
-  count                  = 6
+  count                  = 2
   ami                    = var.aws_ami
   instance_type          = "m5.large"
   subnet_id              = var.aws_subnet_id
