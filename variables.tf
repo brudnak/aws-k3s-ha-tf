@@ -63,3 +63,13 @@ variable "aws_rds_password" {
   type        = string
   description = "Password for the Amazon Aurora MySQL database."
 }
+
+variable "aws_route53_fqdn" {
+  type        = string
+  description = "The fully qualified domain name to use."
+}
+
+variable "local_path_aws_pem" {
+  type        = string
+  description = "Local machine path to pem file used to ssh into AWS instances."
+}

@@ -33,11 +33,18 @@ resource "aws_instance" "aws_instance" {
   key_name               = var.aws_pem_key_name
 
   root_block_device {
-    volume_size = 150
+    volume_size = 200
+    tags = {
+      Name = "${random_pet.random_pet.keepers.aws_prefix}-${random_pet.random_pet.id}${formatdate("MMMDDYY", timestamp())}"
+      DoNotDelete = "True"
+      Owner = "${var.aws_prefix}-terraform"
+    }
   }
 
   tags = {
     Name = "${random_pet.random_pet.keepers.aws_prefix}-${random_pet.random_pet.id}${formatdate("MMMDDYY", timestamp())}"
+    DoNotDelete = "True"
+    Owner = "${var.aws_prefix}-terraform"
   }
 }
 
@@ -140,4 +147,17 @@ resource "aws_rds_cluster_instance" "aws_rds_cluster_instance" {
   instance_class     = "db.r6g.2xlarge"
   engine             = aws_rds_cluster.aws_rds_cluster.engine
   engine_version     = aws_rds_cluster.aws_rds_cluster.engine_version
+}
+
+resource "aws_route53_record" "aws_route53_record" {
+  zone_id = data.aws_route53_zone.zone.zone_id
+  name    = "${var.aws_prefix}-${random_pet.random_pet.id}"
+  type    = "CNAME"
+  ttl     = "60"
+  records = [aws_lb.aws_lb.dns_name]
+}
+
+
+data "aws_route53_zone" "zone" {
+  name = var.aws_route53_fqdn
 }
