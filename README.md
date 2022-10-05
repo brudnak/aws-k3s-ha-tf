@@ -75,3 +75,16 @@ aws_rds_password      = "password-for-your-rds-database-see-comment-for-aws-cons
 aws_route53_fqdn      = "our-most-used-route53-domain-name"
 local_path_aws_pem    = "enter-the-full-path-to-the-pem-file-you-use-for-aws-on-your-local-machine"
 ```
+
+### What is Getting Created?
+
+This Terraform is mostly used for testing hosted / tenant rancher. However, you don't have to import one of the Ranchers into the other, so it can just be used to create standard k3s ha clusters.
+
+It creates two setups, with each k3s ha having 2 nodes each. Two node high availability is the same setup that SUSE Hosted / Tenant Rancher follows.
+
+- ec2 instances
+- target groups
+- load balancers
+- RDS database
+- Route 53 record
+
