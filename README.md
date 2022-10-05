@@ -2,20 +2,58 @@
 
 ## What is the purpose of this Terraform?
 
-For Rancher QA to easily deploy and manage AWS infrastructure for k3s high availability testing. This creates everything you need in AWS to run k3s high availability with an external database. It creates ec2 instances, target groups, load balancers, RDS database, and Route 53 records. 
+For Rancher QA to easily deploy and manage AWS infrastructure for k3s high availability with an external database. 
 
-The k3s install commands are formatted for you and provided in the output.
+All you have to do to get this working is three easy steps:
 
-All you have to do to get a full setup k3s high availability with external database is run 7 commands.
+1. Get this repository on your local machine and setup the `terraform.tfvars` file & run `terraform init`, `terraform apply` 
+2. Once `terraform apply` has finished running there will be further instructions in the output, with fully formatted and ready to go commands for you to run. Copy and paste these 7 commands and your k3s ha cluster will be up and ready.
+3. Now that you have your k3s HA cluster up and ready just install Rancher on top of it following these docs: https://docs.ranchermanager.rancher.io/pages-for-subheaders/install-upgrade-on-a-kubernetes-cluster
 
-1. terraform apply
-2. Run 6 commands that are formatted for you in the terraform output
+>NOTE: WHEN INSTALLING RANCHER WITH LET'S ENCRYPT ONTO A K3S CLUSTER YOU MUST CHANGE THE `--set letsEncrypt.ingress.class=nginx` TO ` --set letsEncrypt.ingress.class=traefik`. OTHERWISE YOU'LL HAVE CERT ISSUES!
+
+#### Example of the Output
+
+```shell
+# START OF FIRST SERVER COMMANDS
+            
+# Step 1: SSH into your 1st server
+ssh -i $THIS_WILL_BE_YOUR_PEM_PATH ubuntu@$FIRST_SERVER_IP
+            
+# Step 2: Run this k3s install curl command
+curl -sfL https://get.k3s.io | sh -s - server \
+  --token=SECRET \
+  --datastore-endpoint=$DATABASE_ENDPOINT \
+  --tls-san $ROUTE_53_URL \
+  --node-external-ip $FIRST_SERVER_IP
+            
+# Step 3: Copy the token from the following command to use with your 2nd server
+sudo cat /var/lib/rancher/k3s/server/token
+            
+# Step 4: Get the kubeconfig for your setup
+sudo cat /etc/rancher/k3s/k3s.yaml
+            
+# START OF SECOND SERVER COMMANDS *******************
+            
+# Step 1: SSH into your 2nd server
+ssh -i $THIS_WILL_BE_YOUR_PEM_PATH ubuntu@$SECOND_SERVER_IP
+            
+# Step 2: echo and tee command the install command to a file named install.sh,
+# this way you can easily use vim to paste in your token from the 1st server.
+# After that you can just run bash ./install.sh
+
+echo 'curl -sfL https://get.k3s.io | sh -s - server --token= %{for instance in aws_rds_cluster_instance.aws_rds_cluster_instance} --datastore-endpoint="mysql://tfadmin:${var.aws_rds_password}@tcp(${instance.endpoint})/k3s"%{endfor} --tls-san ${aws_route53_record.aws_route53_record.fqdn} --node-external-ip ${aws_instance.aws_instance[1].public_ip}' | tee install.sh
+
+# Step 3: edit the install file with vim to paste in the token from the 1st server, then execute with bash
+vim install.sh
+bash ./install.sh
+```
 
 ## Just need to create an RKE1 high availability Rancher infrastructure? Check this repository out instead
 
 https://github.com/brudnak/aws-ha-infra
 
-## How to use it?
+## How Should my `terraform.tfvars` File Look?
 
 All you need to do to make this terraform work is to clone the repository and create a file called `terraform.tfvars` that sits next to the main/parent `main.tf.
 

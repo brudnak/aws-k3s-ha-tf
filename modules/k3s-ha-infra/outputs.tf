@@ -48,9 +48,14 @@ sudo cat /etc/rancher/k3s/k3s.yaml
 # Step 1: SSH into your 2nd server
 ssh -i ${var.local_path_aws_pem} ubuntu@${aws_instance.aws_instance[1].public_ip}
 
-# Step 2: Run this k3s install curl command on this 2nd server
-# MAKE SURE TO INCLUDE THE TOKEN FROM THE 1ST SERVER!!
+# Step 2: echo and tee command the install command to a file named install.sh,
+# this way you can easily use vim to paste in your token from the 1st server.
+# After that you can just run bash ./install.sh
 
 echo 'curl -sfL https://get.k3s.io | sh -s - server --token= %{for instance in aws_rds_cluster_instance.aws_rds_cluster_instance} --datastore-endpoint="mysql://tfadmin:${var.aws_rds_password}@tcp(${instance.endpoint})/k3s"%{endfor} --tls-san ${aws_route53_record.aws_route53_record.fqdn} --node-external-ip ${aws_instance.aws_instance[1].public_ip}' | tee install.sh
+
+# Step 3: edit the install file with vim to paste in the token from the 1st server, then execute with bash
+vim install.sh
+bash ./install.sh
 EOT
 }
